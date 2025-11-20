@@ -1,14 +1,17 @@
 'use client';
 
 import Navbar from "@/app/components/navbar";
-import { useRouter } from "next/navigation";
+import PaymentModal from "@/app/components/PaymentModal";
+import { useState } from "react";
 
 const Prices = () => {
-    const router = useRouter();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState<{ name: string; price: number } | null>(null);
 
-    const handlePlanSelect = (planName: string) => {
+    const handlePlanSelect = (planName: string, planPrice: number) => {
         console.log(`Selected plan: ${planName}`);
-        router.push('/chats');
+        setSelectedPlan({ name: planName, price: planPrice });
+        setIsModalOpen(true);
     };
     const plans = [
         {
@@ -115,7 +118,7 @@ const Prices = () => {
                                         </button>
                                     ) : (
                                         <button
-                                            onClick={() => handlePlanSelect(plan.name)}
+                                            onClick={() => handlePlanSelect(plan.name, plan.price)}
                                             className={`w-full py-3 rounded-lg font-medium transition-colors ${
                                                 plan.isPopular
                                                     ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
@@ -179,6 +182,16 @@ const Prices = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Payment Modal */}
+            {selectedPlan && (
+                <PaymentModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    planName={selectedPlan.name}
+                    planPrice={selectedPlan.price}
+                />
+            )}
         </div>
     );
 };
