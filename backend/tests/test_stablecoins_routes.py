@@ -16,7 +16,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 # Agregar directorio padre al path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from main import app
 

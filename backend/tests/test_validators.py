@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 
 # Agregar directorio padre al path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from utils.validators import (
     is_valid_amount,

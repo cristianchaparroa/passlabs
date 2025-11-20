@@ -5,8 +5,13 @@ SCROLL_SEPOLIA_CHAIN_ID = 534351
 SCROLL_SEPOLIA_RPC = "https://sepolia-rpc.scroll.io/"
 
 # Gas limits
+GAS_LIMIT = 100000
 DEFAULT_GAS_LIMIT = 100000
 MAX_GAS_LIMIT = 500000
+GAS_PRICE_MULTIPLIER = 1.2
+
+# Retry configuration
+MAX_RETRIES = 3
 
 # Stablecoins
 SUPPORTED_STABLECOINS = ["USDC", "USDT", "DAI"]

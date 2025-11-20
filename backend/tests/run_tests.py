@@ -15,6 +15,11 @@ Uso:
     python run_tests.py payments     # Solo tests de pagos
     python run_tests.py stablecoins  # Solo tests de stablecoins
     python run_tests.py services     # Solo tests de servicios
+
+También puede ejecutarse desde el directorio backend:
+    cd backend
+    python -m pytest tests/
+    python -m pytest tests/ -v --cov
 """
 
 import subprocess
@@ -29,7 +34,7 @@ def run_command(cmd, description):
     print(f"{'=' * 70}")
     print(f"Ejecutando: {' '.join(cmd)}\n")
 
-    result = subprocess.run(cmd, cwd=Path(__file__).parent)
+    result = subprocess.run(cmd, cwd=Path(__file__).parent.parent)
     return result.returncode == 0
 
 
@@ -52,18 +57,18 @@ def main():
             break
 
     # Construir comando base
-    cmd_base = ["python", "-m", "pytest", "-v" if verbose else "-q"]
+    cmd_base = ["python", "-m", "pytest", "tests/", "-v" if verbose else "-q"]
 
     if coverage:
         cmd_base.extend(["--cov=.", "--cov-report=html"])
 
     # Diccionario de tests
     test_files = {
-        "payments": "test_payments_routes.py",
-        "stablecoins": "test_stablecoins_routes.py",
-        "services": "test_services.py",
-        "setup": "test_setup.py",
-        "validators": "test_validators.py",
+        "payments": "tests/test_payments_routes.py",
+        "stablecoins": "tests/test_stablecoins_routes.py",
+        "services": "tests/test_services.py",
+        "setup": "tests/test_setup.py",
+        "validators": "tests/test_validators.py",
     }
 
     results = {}
