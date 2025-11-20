@@ -5,6 +5,7 @@ pydantic>=2.9.0
 pydantic-settings>=2.5.0
 httpx==0.25.0
 python-dotenv==1.0.0
+setuptools>=65.0.0
 
 # Testing dependencies (FASE 5)
 pytest==7.4.3
