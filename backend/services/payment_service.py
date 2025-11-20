@@ -87,9 +87,12 @@ class PaymentService:
             # Verificar que el token está permitido en el contrato
             if not await self._verify_token_allowed(token_address):
                 logger.warning(f"Token {stablecoin} not allowed in contract")
-                raise ValueError(
-                    f"Token {stablecoin} is not allowed in payment contract"
+                error_msg = (
+                    f"Token {stablecoin} is not allowed in payment contract. "
+                    f"Please run 'python deployment/add_allowed_tokens.py' to configure tokens. "
+                    f"See CONFIGURE_TOKENS.md for more information."
                 )
+                raise ValueError(error_msg)
 
             # Crear estructura de datos del pago
             payment_data = {
