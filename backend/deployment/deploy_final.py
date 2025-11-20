@@ -146,7 +146,7 @@ class PaymentProcessorDeployer:
 
             # Construir transacción
             print(f"\n📝 Construyendo transacción...")
-            tx = Contract.constructor().build_transaction(
+            tx = Contract.constructor(self.account.address).build_transaction(
                 {
                     "from": self.account.address,
                     "nonce": nonce,
