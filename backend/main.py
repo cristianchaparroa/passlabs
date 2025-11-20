@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from datetime import datetime
 
 from config import settings
@@ -12,35 +13,20 @@ from utils.logger import get_logger
 # Configurar logging
 logger = get_logger(__name__)
 
-# Crear aplicación FastAPI
-app = FastAPI(
-    title="Crypto Payments API",
-    description="MVP de sistema de pagos con criptomonedas en Scroll Sepolia",
-    version="0.5.0",  # Actualizar a 0.5.0 - Fase 5 Testing & Polish
-)
-
-# Configurar CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # En producción, especificar dominios
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Inicializar servicios globales
 payment_service = None
 services_ready = False
 
 
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """
-    Evento de startup de FastAPI
-    Inicializa todos los servicios necesarios
+    Context manager para el ciclo de vida de la aplicación
+    Reemplaza on_event("startup") y on_event("shutdown")
     """
     global payment_service, services_ready
 
+    # === STARTUP ===
     logger.info("=" * 60)
     logger.info("🚀 Starting Crypto Payments API v0.5.0")
     logger.info("=" * 60)
@@ -63,7 +49,7 @@ async def startup_event():
             network_info = blockchain_service.get_network_info()
             logger.info(f"   Chain ID: {network_info.get('chain_id')}")
             logger.info(f"   Latest Block: {network_info.get('latest_block')}")
-            logger.info(f"   Gas Price: {network_info.get('gas_price_gwei')} Gwei")
+            logger.info(f"   Gas Price: {network_info.get('gas_price')} Gwei")
             logger.info(f"   Account: {network_info.get('account')}")
         except Exception as e:
             logger.warning(f"⚠️  Could not get network info: {str(e)}")
@@ -107,15 +93,30 @@ async def startup_event():
         services_ready = False
         raise
 
+    # === SERVE ===
+    yield
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Evento de shutdown de FastAPI"""
+    # === SHUTDOWN ===
     logger.info("🛑 Shutting down Crypto Payments API")
     logger.info("Goodbye!")
 
 
-# Importar rutas DESPUÉS de inicializar app (al final para evitar circular imports)
+# Crear aplicación FastAPI con lifespan
+app = FastAPI(
+    title="Crypto Payments API",
+    description="MVP de sistema de pagos con criptomonedas en Scroll Sepolia",
+    version="0.5.0",
+    lifespan=lifespan,
+)
+
+# Configurar CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # En producción, especificar dominios
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # ==================== ENDPOINTS ====================
@@ -133,7 +134,7 @@ async def health_check():
         "status": "ok",
         "timestamp": datetime.utcnow().isoformat() + "Z",
         "service": "Crypto Payments API",
-        "version": "0.4.0",
+        "version": "0.5.0",
         "services_ready": services_ready,
     }
 
@@ -273,8 +274,7 @@ async def global_exception_handler(request, exc):
     )
 
 
-# ==================== MAIN ====================
-
+# ==================== ROUTERS ====================
 
 # Importar rutas al final para evitar circular imports
 from routes import payments, stablecoins

@@ -144,12 +144,12 @@ class DeFiLlamaService:
         try:
             result = []
 
-            # DeFiLlama API retorna diferentes estructuras dependiendo del endpoint
-            # Generalmente tiene una lista de stablecoins con información por cadena
+            # DeFiLlama API retorna un dict con "peggedAssets" (lista de stablecoins)
+            # Cada item tiene información de circulación en peggedUSD
 
             if isinstance(data, dict):
-                # Si es un diccionario, podría tener una clave "stablecoins"
-                stablecoins_data = data.get("stablecoins", [])
+                # Buscar en la estructura correcta de DeFiLlama
+                stablecoins_data = data.get("peggedAssets", data.get("stablecoins", []))
 
                 if not isinstance(stablecoins_data, list):
                     logger.warning("Unexpected data structure from API")
@@ -174,25 +174,42 @@ class DeFiLlamaService:
                     if symbol not in self.target_stablecoins:
                         continue
 
-                    # Extraer precios - pueden estar en diferentes estructuras
-                    price_usd = self._extract_price(item)
-                    market_cap = self._extract_market_cap(item)
-                    change_24h = self._extract_change_24h(item)
+                    # Para stablecoins de DeFiLlama, el precio es siempre ~1 USD
+                    # y el "market cap" es la circulación total en peggedUSD
+                    price_usd = 1.0  # Stablecoins son por definición $1
+
+                    # Obtener capitalización de mercado desde circulating
+                    circulating = item.get("circulating", {})
+                    market_cap = circulating.get("peggedUSD", 0)
+
+                    # Calcular cambio en 24h basado en circulación
+                    circulating_prev_day = item.get("circulatingPrevDay", {})
+                    prev_day_value = circulating_prev_day.get("peggedUSD", market_cap)
+
+                    if prev_day_value > 0:
+                        change_24h = (
+                            (market_cap - prev_day_value) / prev_day_value
+                        ) * 100
+                    else:
+                        change_24h = 0.0
+
+                    # Extraer chains disponibles
                     chains = self._extract_chains(item)
 
-                    # Solo incluir si tiene precio válido
-                    if price_usd is not None and price_usd > 0:
-                        stablecoin_info = {
-                            "name": name or symbol,
-                            "symbol": symbol,
-                            "price_usd": price_usd,
-                            "market_cap": market_cap or "N/A",
-                            "change_24h": change_24h or 0.0,
-                            "chains": chains,
-                            "last_updated": datetime.utcnow().isoformat() + "Z",
-                        }
-                        result.append(stablecoin_info)
-                        logger.debug(f"Parsed {symbol}: ${price_usd}")
+                    # Incluir el stablecoin con su información
+                    stablecoin_info = {
+                        "name": name or symbol,
+                        "symbol": symbol,
+                        "price_usd": price_usd,
+                        "market_cap": self._format_number(market_cap),
+                        "change_24h": round(change_24h, 2),
+                        "chains": chains,
+                        "last_updated": datetime.utcnow().isoformat() + "Z",
+                    }
+                    result.append(stablecoin_info)
+                    logger.debug(
+                        f"Parsed {symbol}: ${price_usd}, Market Cap: ${market_cap}"
+                    )
 
                 except KeyError as e:
                     logger.debug(f"Missing key in stablecoin data: {str(e)}")
@@ -341,7 +358,12 @@ class DeFiLlamaService:
         try:
             chains = []
 
-            # Intentar extraer desde diferentes estructuras
+            # Intentar extraer desde diferentes estructuras de DeFiLlama
+            if "chainCirculating" in item and isinstance(
+                item["chainCirculating"], dict
+            ):
+                chains.extend(item["chainCirculating"].keys())
+
             if "chains" in item and isinstance(item["chains"], list):
                 chains.extend(item["chains"])
 
@@ -349,11 +371,11 @@ class DeFiLlamaService:
                 chains.extend(item["chainBalances"].keys())
 
             # Filtrar duplicados y retornar
-            return list(set(chains)) if chains else ["scroll"]
+            return list(set(chains)) if chains else []
 
         except Exception as e:
             logger.debug(f"Error extracting chains: {str(e)}")
-            return ["scroll"]
+            return []
 
     def _format_number(self, number: float) -> str:
         """

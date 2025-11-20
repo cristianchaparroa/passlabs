@@ -457,43 +457,91 @@ curl "http://localhost:8000/"
 pip install -r requirements.txt  # Incluye pytest y dependencias
 ```
 
-#### Ejecutar todos los tests
+#### Estructura de Tests
+```
+backend/tests/
+├── __init__.py                    # Package marker
+├── conftest.py                    # Configuración de pytest (fixtures compartidas)
+├── run_tests.py                   # Script para ejecutar todos los tests
+├── test_payments_routes.py        # Tests de endpoints de pagos
+├── test_stablecoins_routes.py     # Tests de endpoints de stablecoins
+├── test_services.py               # Tests de servicios (blockchain, payment, defi_llama)
+├── test_setup.py                  # Tests de verificación de setup
+└── test_validators.py             # Tests de validadores
+```
+
+#### Ejecutar todos los tests desde la carpeta backend
 ```bash
-python run_tests.py
+cd backend
+
+# Opción 1: Usar el script run_tests.py
+python tests/run_tests.py
+
+# Opción 2: Usar pytest directamente
+python -m pytest tests/ -v
+
+# Opción 3: Con reporte de cobertura
+python -m pytest tests/ -v --cov=. --cov-report=html
 ```
 
 #### Ejecutar tests específicos
 ```bash
 # Solo tests de pagos
-python run_tests.py payments
+python tests/run_tests.py payments
 
 # Solo tests de stablecoins
-python run_tests.py stablecoins
+python tests/run_tests.py stablecoins
 
 # Solo tests de servicios
-python run_tests.py services
+python tests/run_tests.py services
+
+# Solo tests de setup
+python tests/run_tests.py setup
+
+# Solo tests de validadores
+python tests/run_tests.py validators
 
 # Con salida detallada
-python run_tests.py --verbose
+python tests/run_tests.py --verbose
 
 # Con reporte de cobertura
-python run_tests.py --coverage
+python tests/run_tests.py --coverage
 ```
 
 #### Ejecutar con pytest directamente
 ```bash
-# Todos los tests
-pytest -v
+# Todos los tests en carpeta tests/
+pytest tests/ -v
 
 # Tests específicos
-pytest test_payments_routes.py -v
-pytest test_stablecoins_routes.py -v
-pytest test_services.py -v
-pytest test_validators.py -v
+pytest tests/test_payments_routes.py -v
+pytest tests/test_stablecoins_routes.py -v
+pytest tests/test_services.py -v
+pytest tests/test_validators.py -v
+pytest tests/test_setup.py -v
 
 # Con cobertura
-pytest --cov=. --cov-report=html
+pytest tests/ -v --cov=. --cov-report=html
+
+# Solo tests unitarios
+pytest tests/ -v -m unit
+
+# Solo tests de integración
+pytest tests/ -v -m integration
+
+# Saltar tests lentos
+pytest tests/ -v -m "not slow"
 ```
+
+#### Fixtures Disponibles (conftest.py)
+- `client`: Cliente de prueba para TestClient de FastAPI
+- `test_app`: Instancia de la aplicación FastAPI
+- `mock_blockchain_service`: Mock del servicio blockchain
+- `mock_payment_service`: Mock del servicio de pagos
+- `mock_defi_llama_service`: Mock del servicio de precios
+- `sample_payment_data`: Datos de prueba para pagos
+- `sample_payment_response`: Respuesta de pago de prueba
+- `mock_env_vars`: Variables de entorno mockeadas
 
 ## 📝 Logs
 
@@ -590,15 +638,15 @@ Fase 1: Setup Base              ✅ COMPLETADA (2 horas)
 Fase 2: Smart Contract          ✅ COMPLETADA (2-3 horas)
 Fase 3: Servicios Core          ✅ COMPLETADA (3-4 horas)
 Fase 4: Rutas API               ✅ COMPLETADA (2-3 horas)
-Fase 5: Testing & Polish        ✅ COMPLETADA (2 horas)
-Fase 6: Deployment              ⏳ PENDIENTE (1 hora)
+Fase 5: Testing & Polish        ✅ COMPLETADA (2.5 horas)
+Fase 6: Deployment              ⏳ EN PROGRESO (1-2 horas)
 ────────────────────────────────────────────────────────
-Total                           85% Completado (12.5-15 horas de 13-17)
+Total                           90% Completado (14-15 horas de 13-17)
 ```
 
 ## 📋 Características Implementadas
 
-### ✅ Backend (Python) - v0.5.0
+### ✅ Backend (Python) - v0.6.0
 - FastAPI con documentación automática (Swagger, ReDoc)
 - 9 Endpoints API implementados y testeados
 - 6 Modelos Pydantic validados
@@ -607,8 +655,9 @@ Total                           85% Completado (12.5-15 horas de 13-17)
 - 4 Validadores funcionales
 - Exception handlers globales (400, 404, 500, 503)
 - Middleware CORS configurado
-- 86 tests unitarios e integración (FASE 5)
-- pytest configurado con cobertura
+- 86+ tests unitarios e integración (FASE 5)
+- pytest configurado con cobertura y fixtures compartidas
+- Carpeta tests/ centralizada con conftest.py
 
 ### ✅ Smart Contract (Solidity)
 - 15 funciones implementadas
@@ -639,34 +688,72 @@ Total                           85% Completado (12.5-15 horas de 13-17)
   - GET /stablecoins/cache-info
   - POST /stablecoins/cache-clear
 
-### ✅ Documentación
-- README.md completo (este archivo)
-- PLAN.md con arquitectura completa
-- FASE_3_SUMMARY.md con detalles de servicios
+### ✅ Testing Infrastructure (Fase 5)
+- Carpeta centralizada: `backend/tests/`
+- conftest.py con 8 fixtures reutilizables
+- Markers de pytest (unit, integration, slow)
+- Script run_tests.py mejorado
+- Test coverage reporting
+- Tests organizados y documentados
+
+### ✅ Deployment Infrastructure (Fase 6)
+- `deployment/deploy_contract.py` - Deployment automatizado
+- `deployment/verify_on_scrollscan.py` - Verificación en blockchain
+- `deployment/test_on_testnet.py` - Testing en testnet
+- `deployment/orchestrate_deployment.py` - Orquestación completa
+- Reportes de deployment y testing
+- Documentación completa en `deployment/README.md`
+
+### ✅ Documentación Completa
+- README.md principal (este archivo)
+- PLAN.md con arquitectura y fases
+- deployment/README.md con guía de deployment
 - Código documentado con docstrings
 - Guías de instalación y setup
 - API Documentation en Swagger UI (/docs)
+- Testing documentation en README.md
 
 ## 🚀 Próximos Pasos
 
-### Inmediato (Fase 6)
-1. [ ] Compilar Smart Contract
-2. [ ] Deploy en Scroll Sepolia
-3. [ ] Verificar en Scrollscan
-4. [ ] Testing en testnet
+### ⏳ FASE 6: Deployment en Progreso
 
-### Completado
-✅ Setup Base (Fase 1)
-✅ Smart Contract (Fase 2)
-✅ Servicios Core (Fase 3)
-✅ Rutas API (Fase 4)
-✅ Testing & Polish (Fase 5)
+#### Scripts de Deployment Disponibles
+```bash
+# Script de orquestación completa (RECOMENDADO)
+python deployment/orchestrate_deployment.py
 
-### Producción
-6. [ ] Deployment final
-7. [ ] Monitoreo
-8. [ ] Escalabilidad
-9. [ ] Documentación de usuario
+# Scripts individuales
+python deployment/deploy_contract.py          # Desplegar contrato
+python deployment/verify_on_scrollscan.py     # Preparar verificación
+python deployment/test_on_testnet.py          # Testing en testnet
+```
+
+#### Checklist Fase 6
+1. [x] Tests organizados en carpeta centralizada
+2. [x] Fixtures compartidas en conftest.py
+3. [x] Scripts de deployment creados
+4. [x] Verificación en Scrollscan lista
+5. [x] Testing en testnet configurado
+6. [ ] Compilar Smart Contract: `cd contracts && npx hardhat compile`
+7. [ ] Ejecutar deployment: `python deployment/orchestrate_deployment.py`
+8. [ ] Verificar en Scrollscan (manual o via script)
+9. [ ] Testing en testnet completado
+10. [ ] Documentación de direcciones actualizada
+
+#### Documentación Completa
+- Ver: `deployment/README.md` para guía detallada de deployment
+
+### Completado ✅
+✅ Fase 1: Setup Base
+✅ Fase 2: Smart Contract
+✅ Fase 3: Servicios Core
+✅ Fase 4: Rutas API
+✅ Fase 5: Testing & Polish (Tests organizados)
+
+### Próximo (Post-Deployment)
+- [ ] Frontend Integration
+- [ ] Producción
+- [ ] Monitoreo y Mantenimiento
 
 ## 📞 Comandos Útiles
 
@@ -699,7 +786,19 @@ cd contracts && npx hardhat compile
 # Ejecutar tests del contrato
 cd contracts && npx hardhat test
 
-# Desplegar contrato
+# Desplegar contrato (FASE 6)
+python deployment/orchestrate_deployment.py
+
+# Verificar en Scrollscan
+python deployment/verify_on_scrollscan.py --guide
+
+# Testing en testnet
+python deployment/test_on_testnet.py
+
+# Ejecutar tests en carpeta tests/
+cd backend
+python -m pytest tests/ -v
+python tests/run_tests.py
 cd contracts && npx hardhat run scripts/deploy.js --network scroll-sepolia
 ```
 

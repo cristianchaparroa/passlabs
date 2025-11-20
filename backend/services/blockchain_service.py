@@ -491,22 +491,49 @@ class BlockchainService:
         Returns:
             dict: Información de la red
         """
+        info = {
+            "chain_id": None,
+            "latest_block": None,
+            "gas_price": None,
+            "is_connected": False,
+            "account": None,
+            "account_balance": None,
+        }
+
         try:
-            return {
-                "chain_id": self.w3.eth.chain_id,
-                "latest_block": self.w3.eth.block_number,
-                "gas_price": float(self.w3.from_wei(self.w3.eth.gas_price, "gwei")),
-                "is_connected": self.is_connected(),
-                "account": self.account.address,
-                "account_balance": float(
-                    self.w3.from_wei(
-                        self.w3.eth.get_balance(self.account.address), "ether"
-                    )
-                ),
-            }
+            info["chain_id"] = self.w3.eth.chain_id
         except Exception as e:
-            logger.error(f"Error getting network info: {str(e)}")
-            return {}
+            logger.debug(f"Error getting chain_id: {str(e)}")
+
+        try:
+            info["latest_block"] = self.w3.eth.block_number
+        except Exception as e:
+            logger.debug(f"Error getting latest_block: {str(e)}")
+
+        try:
+            gas_price_wei = self.w3.eth.gas_price
+            if gas_price_wei is not None:
+                info["gas_price"] = float(self.w3.from_wei(gas_price_wei, "gwei"))
+        except Exception as e:
+            logger.debug(f"Error getting gas_price: {str(e)}")
+
+        try:
+            info["is_connected"] = self.is_connected()
+        except Exception as e:
+            logger.debug(f"Error checking connection: {str(e)}")
+
+        try:
+            info["account"] = self.account.address
+        except Exception as e:
+            logger.debug(f"Error getting account: {str(e)}")
+
+        try:
+            balance_wei = self.w3.eth.get_balance(self.account.address)
+            info["account_balance"] = float(self.w3.from_wei(balance_wei, "ether"))
+        except Exception as e:
+            logger.debug(f"Error getting account_balance: {str(e)}")
+
+        return info
 
 
 # Instancia global del servicio

@@ -14,7 +14,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # Agregar directorio padre al path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from services.blockchain_service import BlockchainService
 from services.defi_llama_service import DeFiLlamaService
