@@ -1,0 +1,15 @@
+{
+  "scroll_sepolia": {
+    "payment_processor": "0x0000000000000000000000000000000000000000",
+    "usdc": "0x0000000000000000000000000000000000000000",
+    "usdt": "0x0000000000000000000000000000000000000000",
+    "dai": "0x0000000000000000000000000000000000000000",
+    "deployment_block": 0,
+    "deployment_date": "2024-01-01"
+  },
+  "notes": {
+    "payment_processor": "Será actualizado después del deploy del contrato",
+    "stablecoins": "Direcciones de los tokens en Scroll Sepolia. Verificar en https://scrollscan.com/",
+    "deployment_block": "Bloque en el que se deployó el contrato"
+  }
+}
