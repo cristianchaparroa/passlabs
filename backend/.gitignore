@@ -137,3 +137,5 @@ logs/
 *.key
 PLAN.md
 node_modules
+artifacts/
+cache
