@@ -1,5 +1,10 @@
+import sys
 from contextlib import asynccontextmanager
 from datetime import datetime
+
+# Enforce Python 3.13
+if sys.version_info < (3, 13):
+    raise RuntimeError("Python 3.13 or higher is required")
 
 from config import settings
 from fastapi import FastAPI
