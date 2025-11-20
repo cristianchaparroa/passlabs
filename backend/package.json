@@ -1,4 +1,10 @@
 {
+  "scripts": {
+    "deploy-sepolia": "hardhat run scripts/deploy.js --network scroll-sepolia",
+    "add-tokens": "hardhat run scripts/add-tokens.js --network scroll-sepolia",
+    "compile": "hardhat compile",
+    "test": "hardhat test"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.4.0",

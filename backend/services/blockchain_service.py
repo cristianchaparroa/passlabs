@@ -444,6 +444,48 @@ class BlockchainService:
             logger.error(f"Error checking token allowed: {str(e)}")
             return False
 
+    async def add_allowed_token(self, token_address: str) -> bool:
+        """
+        Add a token to the allowed list in the smart contract
+        
+        Args:
+            token_address: Address of the token to allow
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            if not self.contract:
+                logger.error("Contract not loaded")
+                return False
+                
+            # Check if already allowed
+            if self.is_token_allowed(token_address):
+                logger.info(f"Token {token_address} is already allowed")
+                return True
+            
+            # Build transaction
+            checksum_address = self.w3.to_checksum_address(token_address)
+            tx = self.build_contract_transaction("addAllowedToken", checksum_address)
+            
+            # Sign and send
+            signed_tx = self.w3.eth.account.sign_transaction(tx, self.account.key)
+            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
+            
+            # Wait for confirmation
+            receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
+            
+            if receipt["status"] == 1:
+                logger.info(f"✅ Token {token_address} added successfully")
+                return True
+            else:
+                logger.error(f"❌ Failed to add token {token_address}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Error adding allowed token: {str(e)}")
+            return False
+
     def get_contract_balance(self, token_address: str) -> float:
         """
         Obtener balance del contrato para un token específico
