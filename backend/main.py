@@ -77,6 +77,28 @@ async def lifespan(app: FastAPI):
             raise RuntimeError("DeFiLlamaService not available")
 
         logger.info("✅ DeFiLlama service ready")
+        
+        # Add allowed tokens to contract
+        logger.info("🔧 Ensuring stablecoin tokens are allowed in contract...")
+        try:
+            token_addresses = {
+                "USDC": settings.USDC_ADDRESS,
+                "USDT": settings.USDT_ADDRESS,
+                "DAI": settings.DAI_ADDRESS
+            }
+            
+            for symbol, address in token_addresses.items():
+                if not blockchain_service.is_token_allowed(address):
+                    logger.info(f"   Adding {symbol} ({address})...")
+                    success = await blockchain_service.add_allowed_token(address)
+                    if success:
+                        logger.info(f"   ✅ {symbol} added successfully")
+                    else:
+                        logger.warning(f"   ⚠️  Failed to add {symbol}")
+                else:
+                    logger.info(f"   ✅ {symbol} already allowed")
+        except Exception as e:
+            logger.warning(f"⚠️  Could not add tokens: {str(e)}")
 
         # Intentar obtener precios iniciales
         logger.info("📡 Fetching initial stablecoin prices...")

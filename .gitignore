@@ -51,3 +51,4 @@ typechain-types/
 *.key
 coverage/
 .nyc_output/
+backend/contracts/deployment-info.json
